@@ -13,16 +13,12 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Vector;
 
 import irven.memoryapplication.dummy.DummyContent;
 
@@ -118,6 +114,10 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         if (navigation.getMenu().getItem(0).isChecked() ) {
             Toast toast = Toast.makeText(getBaseContext(), item.content, Toast.LENGTH_SHORT);
             toast.show();
+            Vector<Memory> memories = memoryDB.loadAllMemories();
+            for (int ind = 0; ind < memories.size(); ++ind) {
+                Log.e("TEST", memories.get(ind).toString());
+            }
         }
     }
 
@@ -170,5 +170,9 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         ItemFragment fragment_home = new ItemFragment();
         fragmentTransaction.replace(R.id.fragment_container, fragment_home, tagItemFragment).addToBackStack(null).commit();
         mNavigationBottom.getMenu().setGroupCheckable(0, true, true);
+
+        Memory memory = new Memory(mnemonic, content);
+        memory = memoryDB.addMemory(memory);
+        Log.e("TEST", memory.toString());
     }
         }
