@@ -1,5 +1,7 @@
 package irven.memoryapplication;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -10,11 +12,16 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -105,11 +112,12 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
     }
 
     @Override
-    public void onListFragmentInteraction(Memory item) {
+    public void onListFragmentInteraction(Memory memory) {
         BottomNavigationView navigation = findViewById(R.id.navigation);
         if (navigation.getMenu().getItem(0).isChecked() ) {
-            Toast toast = Toast.makeText(getBaseContext(), item.toString(), Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(getBaseContext(), memory.toString(), Toast.LENGTH_SHORT);
             toast.show();
+            onClickMemory(memory);
             //List<Memory> memories = memoryDB.loadAllMemories();
             //for (int ind = 0; ind < memories.size(); ++ind) {
             //    Log.e("TEST", memories.get(ind).toString());
@@ -168,7 +176,47 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         mNavigationBottom.getMenu().setGroupCheckable(0, true, true);
 
         Memory memory = new Memory(mnemonic, content);
-        memory = MyDBHandler.getInstance().addMemory(memory);
-        Log.e("TEST", memory.toString());
+        MyDBHandler.getInstance().addMemory(memory);
     }
-        }
+
+    public void onClickMemory(final Memory memory) {
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(
+                new ContextThemeWrapper(this, R.style.myDialog));
+        LayoutInflater inflater = this.getLayoutInflater();
+
+        alertDialog.setView(inflater.inflate(R.layout.dialog_click_memory, null))
+                // Add action buttons
+                .setPositiveButton(R.string.dialog_remembered, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        // increment to remember
+                        memory.timingIndex = memory.timingIndex + 1;
+                        MyDBHandler.getInstance().updateMemory(memory);
+                    }
+                })
+                .setNegativeButton(R.string.dialog_forgot, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // same repeat
+                        MyDBHandler.getInstance().updateMemory(memory);
+                    }
+                });
+
+        final Dialog dialog = alertDialog.create();
+        dialog.show();
+
+        ImageView close = (ImageView) dialog.findViewById(R.id.dialog_close);
+        // if button is clicked, close the custom dialog
+        close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        TextView mnemonic = (TextView) dialog.findViewById(R.id.dialog_mnemonic);
+        mnemonic.setText(memory.mnemonic);
+        TextView content = (TextView) dialog.findViewById(R.id.dialog_content);
+        content.setText(memory.content);
+    }
+
+    }

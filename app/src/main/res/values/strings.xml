@@ -8,4 +8,6 @@
     <string name="mnemonic_hint">Put mnemonic here</string>
     <string name="content_hint">Put content here</string>
     <string name="title_activity_add_memory">AddMemoryActivity</string>
+    <string name="dialog_remembered">Remembered</string>
+    <string name="dialog_forgot">Forgot</string>
 </resources>
