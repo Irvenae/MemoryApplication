@@ -1,5 +1,7 @@
 package irven.memoryapplication;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 class Memory {
@@ -25,11 +27,25 @@ class Memory {
         this.timingIndex = timingIndex;
     }
 
+    public String getTime() {
+        SimpleDateFormat dateFormatHour = new SimpleDateFormat("hh");
+        SimpleDateFormat dateFormatDay = new SimpleDateFormat("dd");
+        SimpleDateFormat dateFormatMonth = new SimpleDateFormat("MMM");
+        Calendar date = Calendar.getInstance();
+        date.setTimeInMillis(time);
+
+        String hour = dateFormatHour.format(date.getTime()) + " h";
+        String day = dateFormatDay.format(date.getTime());
+        String month = dateFormatMonth.format(date.getTime());
+
+        String strDate = day + " " + month + " ("+ hour +")";
+        return strDate;
+    }
+
     @Override
     public String toString() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(time);
+        String time = getTime();
         return "Memory: id: "+ Integer.toString(id) + " mnemonic: " + mnemonic + " content: " +
-            content + " time: " + calendar + " timingIndex: " + Integer.toString(timingIndex);
+            content + " time: " + time + " timingIndex: " + Integer.toString(timingIndex);
     }
 }

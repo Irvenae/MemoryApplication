@@ -18,14 +18,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Vector;
-
-import irven.memoryapplication.dummy.DummyContent;
-
 public class MainActivity  extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener, AddMemoryFragment.OnFragmentInteractionListener
         {
     private BottomNavigationView mNavigationBottom;
-    private MyDBHandler memoryDB;
     private Handler mHandler;
     private HandlerThread mHandlerThread = null;
 
@@ -37,7 +32,8 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        memoryDB = new MyDBHandler(getBaseContext());
+        // initialize db
+        MyDBHandler memoryDB = new MyDBHandler(getBaseContext());
 
         InitBottomViewAndLoadFragment();
 
@@ -109,15 +105,15 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(Memory item) {
         BottomNavigationView navigation = findViewById(R.id.navigation);
         if (navigation.getMenu().getItem(0).isChecked() ) {
-            Toast toast = Toast.makeText(getBaseContext(), item.content, Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(getBaseContext(), item.toString(), Toast.LENGTH_SHORT);
             toast.show();
-            Vector<Memory> memories = memoryDB.loadAllMemories();
-            for (int ind = 0; ind < memories.size(); ++ind) {
-                Log.e("TEST", memories.get(ind).toString());
-            }
+            //List<Memory> memories = memoryDB.loadAllMemories();
+            //for (int ind = 0; ind < memories.size(); ++ind) {
+            //    Log.e("TEST", memories.get(ind).toString());
+           // }
         }
     }
 
@@ -172,7 +168,7 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         mNavigationBottom.getMenu().setGroupCheckable(0, true, true);
 
         Memory memory = new Memory(mnemonic, content);
-        memory = memoryDB.addMemory(memory);
+        memory = MyDBHandler.getInstance().addMemory(memory);
         Log.e("TEST", memory.toString());
     }
         }

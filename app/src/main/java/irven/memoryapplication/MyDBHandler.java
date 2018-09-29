@@ -6,9 +6,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MyDBHandler extends SQLiteOpenHelper {
+    // Singleton instance
+    private static MyDBHandler sInstance = null;
     //information of database
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "memoryDB.db";
@@ -22,6 +25,13 @@ public class MyDBHandler extends SQLiteOpenHelper {
     //initialize the database
     public MyDBHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        // Setup singleton instance
+        sInstance = this;
+    }
+
+    // Getter to access Singleton instance
+    public static MyDBHandler getInstance() {
+        return sInstance ;
     }
     //public MyDBHandler(Context context, String Stringname, SQLiteDatabase.CursorFactory factory, int intversion) {
     //    super(context, DATABASE_NAME, factory, DATABASE_VERSION);
@@ -29,9 +39,12 @@ public class MyDBHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         //create table if not exists
-        String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "(" + COLUMN_ID +
-                "INTEGER PRIMARYKEY," + COLUMN_MNEMONIC + "TEXT" + COLUMN_CONTENT + "TEXT" +
-                COLUMN_TIME + "INTEGER" + COLUMN_TIMING_INDEX + "INTEGER )";
+        String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "(" +
+                COLUMN_ID + " INTEGER PRIMARY KEY," +
+                COLUMN_MNEMONIC + " TEXT," +
+                COLUMN_CONTENT + " TEXT," +
+                COLUMN_TIME + " INTEGER," +
+                COLUMN_TIMING_INDEX + " INTEGER );";
         db.execSQL(CREATE_TABLE);
     }
 
@@ -40,19 +53,23 @@ public class MyDBHandler extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int i, int i1) {}
-    public Vector<Memory> loadAllMemories() {
-        Vector<Memory> memories = new Vector();
+    public void onUpgrade(SQLiteDatabase db, int i, int i1) {
+        db.execSQL("DROP TABLE IF EXISTS "+TABLE_NAME);
+        onCreate(db);
+    }
+
+    public List<Memory> loadAllMemories() {
+        List<Memory> memories = new ArrayList<>();
         String result = "";
         String query = "Select * FROM " + TABLE_NAME;
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         while (cursor.moveToNext()) {
-            int id = cursor.getInt(0);
-            String mnemonic = cursor.getString(1);
-            String content = cursor.getString(2);
-            Long time = cursor.getLong(3);
-            int timeIndex = cursor.getInt(4);
+            int id = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
+            String mnemonic = cursor.getString(cursor.getColumnIndex(COLUMN_MNEMONIC));
+            String content = cursor.getString(cursor.getColumnIndex(COLUMN_CONTENT));
+            Long time = cursor.getLong(cursor.getColumnIndex(COLUMN_TIME));
+            int timeIndex = cursor.getInt(cursor.getColumnIndex(COLUMN_TIMING_INDEX));
             Memory memory = new Memory(id, mnemonic, content, time, timeIndex);
             memories.add(memory);
         }
@@ -61,9 +78,10 @@ public class MyDBHandler extends SQLiteOpenHelper {
         return memories;
     }
 
-    public Vector<Memory> loadMemoriesToRepeat() {
-        Vector<Memory> memories = new Vector();
-        String query = "Select * FROM " + TABLE_NAME + "WHERE" + COLUMN_TIME + "<'" + String.valueOf(System.currentTimeMillis()) + "'";
+    public List<Memory> loadMemoriesToRepeat() {
+        List<Memory> memories = new ArrayList<>();
+        String query = "Select * FROM " + TABLE_NAME + " WHERE "
+                + COLUMN_TIME + " < '" + String.valueOf(System.currentTimeMillis()) + "'";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         while (cursor.moveToNext()) {
@@ -83,6 +101,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     public Memory addMemory(Memory memory) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_MNEMONIC, memory.mnemonic);
+        values.put(COLUMN_CONTENT, memory.content);
         values.put(COLUMN_TIME, memory.time);
         values.put(COLUMN_TIMING_INDEX, memory.timingIndex);
         SQLiteDatabase db = this.getWritableDatabase();
@@ -94,7 +113,8 @@ public class MyDBHandler extends SQLiteOpenHelper {
 
     public boolean deleteMemory(Memory memory) {
         boolean result = false;
-        String query = "Select * FROM " + TABLE_NAME + "WHERE" + COLUMN_ID + "= '" + String.valueOf(memory.id) + "'";
+        String query = "Select * FROM " + TABLE_NAME +
+                " WHERE " + COLUMN_ID + " = '" + String.valueOf(memory.id) + "'";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         if (cursor.moveToFirst()) {

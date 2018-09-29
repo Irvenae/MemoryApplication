@@ -10,9 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import irven.memoryapplication.dummy.DummyContent;
-import irven.memoryapplication.dummy.DummyContent.DummyItem;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,9 +21,7 @@ import java.util.List;
  */
 public class ItemFragment extends Fragment {
 
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private RecyclerView mRecyclerView;
@@ -74,9 +70,25 @@ public class ItemFragment extends Fragment {
         View view = inflater.inflate(R.layout.memory_item_list, container, false);
 
         Bundle bundle = getArguments();
-        int item = 0;
+        int itemId = R.id.navigation_new;
         if (bundle != null && bundle.containsKey("Item")) {
-            item = bundle.getInt("Item");
+            itemId = bundle.getInt("Item");
+        }
+
+        List<Memory> memories = new ArrayList<>();
+        MyDBHandler memoryDB = MyDBHandler.getInstance();
+        switch (itemId) {
+            case R.id.navigation_new:
+                memories = memoryDB.loadMemoriesToRepeat();
+                break;
+            case R.id.navigation_learning:
+                memories = memoryDB.loadAllMemories();
+                break;
+            case R.id.navigation_learned:
+                memories = memoryDB.loadAllMemories();
+                break;
+            default:
+                memories = memoryDB.loadAllMemories();
         }
 
         // Set the adapter
@@ -88,7 +100,7 @@ public class ItemFragment extends Fragment {
             } else {
                 mRecyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            mRecyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            mRecyclerView.setAdapter(new MyItemRecyclerViewAdapter(memories, mListener));
         }
         return view;
     }
@@ -122,7 +134,6 @@ public class ItemFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(Memory item);
     }
 }

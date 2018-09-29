@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.google.android.gms.plus.PlusOneButton;
-
 /**
  * A fragment
  * Activities that contain this fragment must implement the
