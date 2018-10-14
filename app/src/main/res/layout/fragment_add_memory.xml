@@ -23,6 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:textColor="@color/white"
             android:hint="@string/mnemonic_hint" />
     </android.support.design.widget.TextInputLayout>
 
@@ -35,6 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:textColor="@color/white"
             android:hint="@string/content_hint" />
     </android.support.design.widget.TextInputLayout>
 

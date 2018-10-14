@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <android.support.v7.widget.Toolbar
+    <!--<android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,30 +24,53 @@
         android:textSize="@dimen/fontsize_title"
         android:layout_gravity="center"
         android:id="@+id/toolbar_title" />
-    </android.support.v7.widget.Toolbar >
+    </android.support.v7.widget.Toolbar >-->
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin">
+        android:layout_height="match_parent">
 
-        <RelativeLayout
-            android:id="@+id/fragment_container"
-            android:layout_width="wrap_content"
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/main_constraint_inner"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintBottom_toTopOf="@+id/navigation"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin">
+
+            <RelativeLayout
+                android:id="@+id/fragment_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/start_add_memory_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:backgroundTint="@android:color/background_dark"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:srcCompat="@drawable/ic_lightbulb_24dp" />
+
+        </android.support.constraint.ConstraintLayout>
 
         <android.support.design.widget.BottomNavigationView
             android:id="@+id/navigation"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:background="?android:attr/windowBackground"
+            android:background="@color/colorPrimary"
+            app:itemIconTint="@color/bottom_nav_icon_color_selector"
+            app:itemTextColor="@color/bottom_nav_icon_color_selector"
+            app:labelVisibilityMode="unlabeled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -55,18 +78,6 @@
             app:menu="@menu/navigation">
 
         </android.support.design.widget.BottomNavigationView>
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/start_add_memory_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:backgroundTint="@android:color/background_light"
-            app:layout_constraintBottom_toTopOf="@+id/navigation"
-            app:layout_constraintRight_toRightOf="parent"
-            app:srcCompat="@android:drawable/ic_input_add" />
     </android.support.constraint.ConstraintLayout>
 
 

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:colorPrimary">?attr/colorPrimary</item>
+        <item name="android:colorAccent">@color/accent_material_dark</item>
+        <item name="android:colorPrimaryDark">@color/primary_dark_material_dark</item>
+        <item name="android:textColorHint">@color/white</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="android:colorForeground">@color/white</item>
+        <item name="android:textViewStyle">@style/TextStyle.Serif</item>
+    </style>
+</resources>

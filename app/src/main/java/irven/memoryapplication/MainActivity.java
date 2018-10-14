@@ -2,7 +2,6 @@ package irven.memoryapplication;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,16 +10,12 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ContextThemeWrapper;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -81,30 +76,30 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
 
                 switch (item.getItemId()) {
                     case R.id.navigation_new:
-                        setToolbar(getString(R.string.title_home), false);
+                        setToolbar(getString(R.string.title_repeat), false);
                         return true;
                     case R.id.navigation_learning:
-                        setToolbar(getString(R.string.title_dashboard), false);
+                        setToolbar(getString(R.string.title_learning), false);
                         return true;
                     case R.id.navigation_learned:
-                        setToolbar(getString(R.string.title_notifications), false);
+                        setToolbar(getString(R.string.title_learned), false);
                         return true;
                 }
                 return false;
             }
         });
 
-        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        mToolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
-        setSupportActionBar(mToolbar);
-        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onBackPressed();
-            }
-        });
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        setToolbar(getString(R.string.title_home), false);
+//        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
+//        mToolbar.setNavigationIcon(R.drawable.ic_arrow_back_black_24dp);
+//        setSupportActionBar(mToolbar);
+//        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                onBackPressed();
+//            }
+//        });
+//        getSupportActionBar().setDisplayShowTitleEnabled(false);
+//        setToolbar(getString(R.string.title_home), false);
 
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         ItemFragment fragment_home = new ItemFragment();
@@ -134,7 +129,7 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
             if (item.getItemId() != R.id.navigation_new) {
                 ItemFragment itemFragment = (ItemFragment) f;
                 itemFragment.updateFragment(R.id.navigation_new);
-                setToolbar(getString(R.string.title_home), false);
+                setToolbar(getString(R.string.title_repeat), false);
                 mNavigationBottom.setSelectedItemId(R.id.navigation_new);
             }
         }
@@ -161,10 +156,10 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
     }
 
     public void setToolbar(String title, boolean back_navigation) {
-        getSupportActionBar().setDisplayHomeAsUpEnabled(back_navigation);
-
-        TextView titleTextview = (TextView) findViewById(R.id.toolbar_title);
-        titleTextview.setText(title);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(back_navigation);
+//
+//        TextView titleTextview = (TextView) findViewById(R.id.toolbar_title);
+//        titleTextview.setText(title);
     }
 
     @Override

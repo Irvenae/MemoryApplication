@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Memory Application</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_repeat">Repeat</string>
+    <string name="title_learning">Learning</string>
+    <string name="title_learned">Learned</string>
     <string name="txt_add_memory">Add new content that needs to be remembered</string>
     <string name="txt_button_add_memory">Add</string>
     <string name="mnemonic_hint">Put mnemonic here</string>
