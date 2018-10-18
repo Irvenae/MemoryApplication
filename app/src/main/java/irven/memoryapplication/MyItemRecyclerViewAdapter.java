@@ -43,7 +43,8 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mMnemonicView.setText(mValues.get(position).mnemonic);
-        holder.mDateView.setText(mValues.get(position).getTime());
+        holder.mRepeatDateView.setText(mValues.get(position).getrepeatTime());
+        holder.mStartDateView.setText(mValues.get(position).getstartTime());
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,19 +66,22 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView mMnemonicView;
-        public final TextView mDateView;
+        public final TextView mRepeatDateView;
+        public final TextView mStartDateView;
         public Memory mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
             mMnemonicView = (TextView) view.findViewById(R.id.mnemonic);
-            mDateView = (TextView) view.findViewById(R.id.date);
+            mStartDateView = (TextView) view.findViewById(R.id.startdate);
+            mRepeatDateView = (TextView) view.findViewById(R.id.repeatdate);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mMnemonicView.getText() + " " + mDateView + "'";
+            return super.toString() + " '" + mMnemonicView.getText() + " repeatdate: " +
+                    mRepeatDateView + " startdate" + mStartDateView + "'";
         }
     }
 }

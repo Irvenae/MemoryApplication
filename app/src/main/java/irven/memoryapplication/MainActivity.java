@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ContextThemeWrapper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,7 +57,6 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
     private void InitBottomViewAndLoadFragment() {
         mNavigationBottom = findViewById(R.id.navigation);
         mNavigationBottom.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
@@ -110,8 +110,6 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
     public void onListFragmentInteraction(Memory memory) {
         BottomNavigationView navigation = findViewById(R.id.navigation);
         if (navigation.getMenu().getItem(0).isChecked() ) {
-            Toast toast = Toast.makeText(getBaseContext(), memory.toString(), Toast.LENGTH_SHORT);
-            toast.show();
             onClickMemory(memory);
             //List<Memory> memories = memoryDB.loadAllMemories();
             //for (int ind = 0; ind < memories.size(); ++ind) {
@@ -172,6 +170,7 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
 
         Memory memory = new Memory(mnemonic, content);
         MyDBHandler.getInstance().addMemory(memory);
+        Log.d("TEST",memory.toString());
     }
 
     public void onClickMemory(final Memory memory) {
@@ -185,13 +184,14 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         // increment to remember
-                        memory.timingIndex = memory.timingIndex + 1;
+                        memory.onRememberedWell();
                         MyDBHandler.getInstance().updateMemory(memory);
                     }
                 })
                 .setNegativeButton(R.string.dialog_forgot, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // same repeat
+                        memory.onForgot();
                         MyDBHandler.getInstance().updateMemory(memory);
                     }
                 });

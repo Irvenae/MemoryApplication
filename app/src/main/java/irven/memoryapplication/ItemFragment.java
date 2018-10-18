@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,17 +43,24 @@ public class ItemFragment extends Fragment {
     }
 
     public void updateFragment(int itemId) {
-        MyItemRecyclerViewAdapter adapter = (MyItemRecyclerViewAdapter) mRecyclerView.getAdapter();
+        List<Memory> memories = new ArrayList<>();
+        MyDBHandler memoryDB = MyDBHandler.getInstance();
         switch (itemId) {
             case R.id.navigation_new:
-                //adapter.clearItems();
-                //adapter.notifyDataSetChanged();
-                return;
+                memories = memoryDB.loadMemoriesToRepeat();
+                break;
             case R.id.navigation_learning:
-                return ;
+                memories = memoryDB.loadLearningMemories();
+                break;
             case R.id.navigation_learned:
-                return;
+                memories = memoryDB.loadLearnedMemories();
+                break;
+            default:
+                memories = memoryDB.loadAllMemories();
         }
+        mRecyclerView.setAdapter(new MyItemRecyclerViewAdapter(memories, mListener));
+        MyItemRecyclerViewAdapter adapter = (MyItemRecyclerViewAdapter) mRecyclerView.getAdapter();
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -70,11 +78,11 @@ public class ItemFragment extends Fragment {
         View view = inflater.inflate(R.layout.memory_item_list, container, false);
 
         Bundle bundle = getArguments();
+        // default
         int itemId = R.id.navigation_new;
         if (bundle != null && bundle.containsKey("Item")) {
             itemId = bundle.getInt("Item");
         }
-
         List<Memory> memories = new ArrayList<>();
         MyDBHandler memoryDB = MyDBHandler.getInstance();
         switch (itemId) {
