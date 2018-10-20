@@ -107,7 +107,6 @@ public class MyDBHandler extends SQLiteOpenHelper {
     public List<Memory> loadLearningMemories() {
         List<Memory> memories = new ArrayList<>();
         String query = "Select * FROM " + TABLE_NAME + " WHERE "
-                + COLUMN_REPEATTIME + " > '" + String.valueOf(System.currentTimeMillis()) + "' AND "
                 + COLUMN_REPEATTIME + " < '" + String.valueOf(System.currentTimeMillis() + assumeLearned) + "'";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(query, null);

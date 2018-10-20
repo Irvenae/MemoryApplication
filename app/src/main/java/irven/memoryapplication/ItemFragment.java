@@ -46,7 +46,7 @@ public class ItemFragment extends Fragment {
         List<Memory> memories = new ArrayList<>();
         MyDBHandler memoryDB = MyDBHandler.getInstance();
         switch (itemId) {
-            case R.id.navigation_new:
+            case R.id.navigation_repeat:
                 memories = memoryDB.loadMemoriesToRepeat();
                 break;
             case R.id.navigation_learning:
@@ -79,21 +79,21 @@ public class ItemFragment extends Fragment {
 
         Bundle bundle = getArguments();
         // default
-        int itemId = R.id.navigation_new;
+        int itemId = R.id.navigation_learning;
         if (bundle != null && bundle.containsKey("Item")) {
             itemId = bundle.getInt("Item");
         }
         List<Memory> memories = new ArrayList<>();
         MyDBHandler memoryDB = MyDBHandler.getInstance();
         switch (itemId) {
-            case R.id.navigation_new:
+            case R.id.navigation_repeat:
                 memories = memoryDB.loadMemoriesToRepeat();
                 break;
             case R.id.navigation_learning:
-                memories = memoryDB.loadAllMemories();
+                memories = memoryDB.loadLearningMemories();
                 break;
             case R.id.navigation_learned:
-                memories = memoryDB.loadAllMemories();
+                memories = memoryDB.loadLearnedMemories();
                 break;
             default:
                 memories = memoryDB.loadAllMemories();

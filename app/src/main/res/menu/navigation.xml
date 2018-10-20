@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
-        android:id="@+id/navigation_new"
+        android:id="@+id/navigation_repeat"
         android:icon="@drawable/ic_refresh_24dp"
         android:title="@string/title_repeat" />
 
@@ -15,5 +14,4 @@
         android:id="@+id/navigation_learned"
         android:icon="@drawable/ic_brain_24dp"
         android:title="@string/title_learned" />
-
 </menu>

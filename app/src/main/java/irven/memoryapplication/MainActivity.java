@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity  extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener, AddMemoryFragment.OnFragmentInteractionListener
         {
@@ -59,33 +58,8 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         mNavigationBottom.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-                if (f.getTag().equals(tagItemFragment)) {
-                    ItemFragment itemFragment = (ItemFragment) f;
-                    itemFragment.updateFragment(item.getItemId());
-                } else {
-                    ItemFragment itemFragment = new ItemFragment();
-                    Bundle bundl = new Bundle();
-                    bundl.putInt("Item", item.getItemId());
-                    itemFragment.setArguments(bundl);
-                    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.fragment_container, itemFragment, tagItemFragment).addToBackStack(null).commit();
-                    mNavigationBottom.getMenu().setGroupCheckable(0, true, true);
-                }
-
-
-                switch (item.getItemId()) {
-                    case R.id.navigation_new:
-                        setToolbar(getString(R.string.title_repeat), false);
-                        return true;
-                    case R.id.navigation_learning:
-                        setToolbar(getString(R.string.title_learning), false);
-                        return true;
-                    case R.id.navigation_learned:
-                        setToolbar(getString(R.string.title_learned), false);
-                        return true;
-                }
-                return false;
+                handleViewChange(item.getItemId(), false);
+                return true;
             }
         });
 
@@ -100,42 +74,67 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
 //        });
 //        getSupportActionBar().setDisplayShowTitleEnabled(false);
 //        setToolbar(getString(R.string.title_home), false);
-
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        ItemFragment fragment_home = new ItemFragment();
-        fragmentTransaction.add(R.id.fragment_container, fragment_home, tagItemFragment).addToBackStack(null).commit();
+        ItemFragment itemFragment = new ItemFragment();
+        Bundle bundl = new Bundle();
+        bundl.putInt("Item", R.id.navigation_learning);
+        itemFragment.setArguments(bundl);
+        fragmentTransaction.add(R.id.fragment_container, itemFragment, tagItemFragment).addToBackStack(null).commit();
+        mNavigationBottom.getMenu().getItem(1).setChecked(true);
     }
 
     @Override
     public void onListFragmentInteraction(Memory memory) {
         BottomNavigationView navigation = findViewById(R.id.navigation);
-        if (navigation.getMenu().getItem(0).isChecked() ) {
-            onClickMemory(memory);
-            //List<Memory> memories = memoryDB.loadAllMemories();
-            //for (int ind = 0; ind < memories.size(); ++ind) {
-            //    Log.e("TEST", memories.get(ind).toString());
-           // }
-        }
+        onClickMemory(memory, navigation.getSelectedItemId());
     }
 
     @Override
     public void onBackPressed() {
-        final Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+        handleViewChange(R.id.navigation_learning, true);
+    }
+
+    private void handleViewChange(int newItem, boolean back_navigation) {
+        Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         if (f.getTag().equals(tagItemFragment)) {
-            BottomNavigationView bottomNavigationView = findViewById(R.id.navigation);
-            MenuItem item = bottomNavigationView.getMenu().findItem(bottomNavigationView.getSelectedItemId());
-            if (item.getItemId() != R.id.navigation_new) {
-                ItemFragment itemFragment = (ItemFragment) f;
-                itemFragment.updateFragment(R.id.navigation_new);
-                setToolbar(getString(R.string.title_repeat), false);
-                mNavigationBottom.setSelectedItemId(R.id.navigation_new);
+            ItemFragment itemFragment = (ItemFragment) f;
+            itemFragment.updateFragment(newItem);
+            switch (newItem) {
+                case R.id.navigation_repeat:
+                    setToolbar(getString(R.string.title_repeat), false);
+                    break;
+                case R.id.navigation_learning:
+                    setToolbar(getString(R.string.title_learning), false);
+                    break;
+                case R.id.navigation_learned:
+                    setToolbar(getString(R.string.title_learned), false);
+                    break;
             }
-        }
-        if (f.getTag().equals(tagAddItemFragment)) {
+            if (back_navigation) {
+                mNavigationBottom.setSelectedItemId(newItem);
+            }
+        } else {
+            ItemFragment itemFragment = new ItemFragment();
+            Bundle bundl = new Bundle();
+            bundl.putInt("Item", newItem);
+            itemFragment.setArguments(bundl);
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            ItemFragment fragment_home = new ItemFragment();
-            fragmentTransaction.replace(R.id.fragment_container, fragment_home, tagItemFragment).addToBackStack(null).commit();
+            fragmentTransaction.replace(R.id.fragment_container, itemFragment, tagItemFragment).addToBackStack(null).commit();
             mNavigationBottom.getMenu().setGroupCheckable(0, true, true);
+            int checkable_item = 0;
+            switch (newItem) {
+                case R.id.navigation_repeat:
+                    checkable_item = 0;
+                    break;
+                case R.id.navigation_learning:
+                    checkable_item = 1;
+                    break;
+                case R.id.navigation_learned:
+                    checkable_item = 2;
+                    break;
+            }
+            mNavigationBottom.getMenu().getItem(checkable_item).setChecked(true);
+            setToolbar(getString(newItem), false);
         }
     }
 
@@ -163,38 +162,39 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
     @Override
     public void onAddMemory(String mnemonic, String content) {
         // add to database go to main screen
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        ItemFragment fragment_home = new ItemFragment();
-        fragmentTransaction.replace(R.id.fragment_container, fragment_home, tagItemFragment).addToBackStack(null).commit();
-        mNavigationBottom.getMenu().setGroupCheckable(0, true, true);
+        handleViewChange(R.id.navigation_learning, false);
 
         Memory memory = new Memory(mnemonic, content);
         MyDBHandler.getInstance().addMemory(memory);
         Log.d("TEST",memory.toString());
     }
 
-    public void onClickMemory(final Memory memory) {
+    public void onClickMemory(final Memory memory, int itemId) {
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(
                 new ContextThemeWrapper(this, R.style.myDialog));
         LayoutInflater inflater = this.getLayoutInflater();
 
-        alertDialog.setView(inflater.inflate(R.layout.dialog_click_memory, null))
-                // Add action buttons
-                .setPositiveButton(R.string.dialog_remembered, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        // increment to remember
-                        memory.onRememberedWell();
-                        MyDBHandler.getInstance().updateMemory(memory);
-                    }
-                })
-                .setNegativeButton(R.string.dialog_forgot, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // same repeat
-                        memory.onForgot();
-                        MyDBHandler.getInstance().updateMemory(memory);
-                    }
-                });
+        if (itemId == R.id.navigation_repeat) {
+            alertDialog.setView(inflater.inflate(R.layout.dialog_click_memory, null))
+                    // Add action buttons
+                    .setPositiveButton(R.string.dialog_remembered, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            // increment to remember
+                            memory.onRememberedWell();
+                            MyDBHandler.getInstance().updateMemory(memory);
+                        }
+                    })
+                    .setNegativeButton(R.string.dialog_forgot, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // same repeat
+                            memory.onForgot();
+                            MyDBHandler.getInstance().updateMemory(memory);
+                        }
+                    });
+        } else {
+            alertDialog.setView(inflater.inflate(R.layout.dialog_click_memory, null));
+        }
 
         final Dialog dialog = alertDialog.create();
         dialog.show();
