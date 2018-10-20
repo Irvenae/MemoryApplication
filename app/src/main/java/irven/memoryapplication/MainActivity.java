@@ -2,6 +2,8 @@ package irven.memoryapplication;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.support.design.internal.BottomNavigationItemView;
+import android.support.design.internal.BottomNavigationMenuView;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,11 +22,11 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MainActivity  extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener, AddMemoryFragment.OnFragmentInteractionListener
-        {
+public class MainActivity  extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener, AddMemoryFragment.OnFragmentInteractionListener {
     private BottomNavigationView mNavigationBottom;
     private Handler mHandler;
     private HandlerThread mHandlerThread = null;
+    private NotificationHandler mNotificationHandler;
 
     private String tagItemFragment = "ITEM";
     private String tagAddItemFragment = "ADDITEM";
@@ -38,6 +40,8 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         MyDBHandler memoryDB = new MyDBHandler(getBaseContext());
 
         InitBottomViewAndLoadFragment();
+
+        mNotificationHandler = new NotificationHandler(getBaseContext());
 
         FloatingActionButton addButton = findViewById(R.id.start_add_memory_button);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -59,6 +63,9 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 handleViewChange(item.getItemId(), false);
+                if (item.getItemId() == R.id.navigation_repeat) {
+                    mNotificationHandler.Remove(mNavigationBottom);
+                }
                 return true;
             }
         });
@@ -92,6 +99,13 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
     @Override
     public void onBackPressed() {
         handleViewChange(R.id.navigation_learning, true);
+    }
+
+    @Override
+    public void onResume() {
+        // check notifications
+        mNotificationHandler.update(mNavigationBottom);
+        super.onResume();
     }
 
     private void handleViewChange(int newItem, boolean back_navigation) {
@@ -166,7 +180,6 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
 
         Memory memory = new Memory(mnemonic, content);
         MyDBHandler.getInstance().addMemory(memory);
-        Log.d("TEST",memory.toString());
     }
 
     public void onClickMemory(final Memory memory, int itemId) {
@@ -213,5 +226,7 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         TextView content = (TextView) dialog.findViewById(R.id.dialog_content);
         content.setText(memory.content);
     }
+
+
 
     }
