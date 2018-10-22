@@ -7,6 +7,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class MyDBHandler extends SQLiteOpenHelper {
@@ -17,13 +19,13 @@ public class MyDBHandler extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "memoryDB.db";
     private static final long assumeLearned = (long) 3600 * 1000 * 24 * 30 * 6; // half a year
 
-    public static final String TABLE_NAME = "Memory";
-    public static final String COLUMN_ID = "ID";
-    public static final String COLUMN_MNEMONIC = "Mnemonic";
-    public static final String COLUMN_CONTENT = "Content";
-    public static final String COLUMN_STARTTIME = "startDate";
-    public static final String COLUMN_REPEATTIME = "CheckDate";
-    public static final String COLUMN_TIMING_INDEX = "TimingIndex";
+    private static final String TABLE_NAME = "Memory";
+    private static final String COLUMN_ID = "ID";
+    private static final String COLUMN_MNEMONIC = "Mnemonic";
+    private static final String COLUMN_CONTENT = "Content";
+    private static final String COLUMN_STARTTIME = "startDate";
+    private static final String COLUMN_REPEATTIME = "CheckDate";
+    private static final String COLUMN_TIMING_INDEX = "TimingIndex";
 
 
     //initialize the database
@@ -37,6 +39,7 @@ public class MyDBHandler extends SQLiteOpenHelper {
     public static MyDBHandler getInstance() {
         return sInstance ;
     }
+
     //public MyDBHandler(Context context, String Stringname, SQLiteDatabase.CursorFactory factory, int intversion) {
     //    super(context, DATABASE_NAME, factory, DATABASE_VERSION);
     //}
@@ -132,6 +135,34 @@ public class MyDBHandler extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         return memories;
+    }
+
+    public Memory getSoonestNewMemoryToRepeat() {
+        List<Memory> memories = new ArrayList<>();
+        String query = "Select * FROM " + TABLE_NAME + " WHERE "
+                + COLUMN_REPEATTIME + " > '" + String.valueOf(System.currentTimeMillis()) + "' AND "
+                + COLUMN_REPEATTIME + " < '" + String.valueOf(System.currentTimeMillis() + assumeLearned) + "'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        while (cursor.moveToNext()) {
+            Memory memory = getMemoryFromCursor(cursor);
+            memories.add(memory);
+        }
+        cursor.close();
+        db.close();
+        // sort to least time
+        Collections.sort(memories, new Comparator<Memory>() {
+            @Override
+            public int compare(Memory lhs, Memory rhs) {
+                // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+                return lhs.repeatTime > rhs.repeatTime ? -1 : (lhs.repeatTime < rhs.repeatTime) ? 1 : 0;
+            }
+        });
+        if (memories.size() == 0) {
+            return new Memory("", "" );
+        } else {
+            return memories.get(0);
+        }
     }
 
     // Id is NOT added

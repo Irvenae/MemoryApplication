@@ -1,9 +1,9 @@
 package irven.memoryapplication;
 
 import android.app.Dialog;
+
 import android.content.DialogInterface;
-import android.support.design.internal.BottomNavigationItemView;
-import android.support.design.internal.BottomNavigationMenuView;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,26 +22,41 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MainActivity  extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener, AddMemoryFragment.OnFragmentInteractionListener {
-    private BottomNavigationView mNavigationBottom;
-    private Handler mHandler;
-    private HandlerThread mHandlerThread = null;
-    private NotificationHandler mNotificationHandler;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
+public class MainActivity  extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener, AddMemoryFragment.OnFragmentInteractionListener {
+    public static String STARTSCREENITEMID = "STARTSCREENITEMID";
     private String tagItemFragment = "ITEM";
     private String tagAddItemFragment = "ADDITEM";
+
+    private BottomNavigationView mNavigationBottom;
+    //private Handler mHandler;
+    //private HandlerThread mHandlerThread = null;
+    private List<Alarm> alarms = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // initialize db
+        // initialize
         MyDBHandler memoryDB = new MyDBHandler(getBaseContext());
+        Intent startIntent = getIntent();
+        int startItemId = R.id.navigation_learning;
+        if (startIntent != null) {
+            startItemId = startIntent.getIntExtra(MainActivity.STARTSCREENITEMID, R.id.navigation_learning);
+        }
+        InitBottomViewAndLoadFragment(startItemId);
+        NotificationHandler notificationHandler = new NotificationHandler(getBaseContext(), getIntent());
+        if (startItemId == R.id.navigation_repeat) {
+            notificationHandler.Remove(mNavigationBottom);
+        } else {
+            NotificationHandler.getInstance().update(getBaseContext(), mNavigationBottom);
+        }
 
-        InitBottomViewAndLoadFragment();
-
-        mNotificationHandler = new NotificationHandler(getBaseContext());
 
         FloatingActionButton addButton = findViewById(R.id.start_add_memory_button);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -57,14 +72,14 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         //mHandler.postDelayed(periodicUpdate, 3600*1000);
     }
 
-    private void InitBottomViewAndLoadFragment() {
+    private void InitBottomViewAndLoadFragment(int itemId) {
         mNavigationBottom = findViewById(R.id.navigation);
         mNavigationBottom.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                handleViewChange(item.getItemId(), false);
+                handleViewChange(item.getItemId(), false, false);
                 if (item.getItemId() == R.id.navigation_repeat) {
-                    mNotificationHandler.Remove(mNavigationBottom);
+                    NotificationHandler.getInstance().Remove(mNavigationBottom);
                 }
                 return true;
             }
@@ -81,13 +96,7 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
 //        });
 //        getSupportActionBar().setDisplayShowTitleEnabled(false);
 //        setToolbar(getString(R.string.title_home), false);
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        ItemFragment itemFragment = new ItemFragment();
-        Bundle bundl = new Bundle();
-        bundl.putInt("Item", R.id.navigation_learning);
-        itemFragment.setArguments(bundl);
-        fragmentTransaction.add(R.id.fragment_container, itemFragment, tagItemFragment).addToBackStack(null).commit();
-        mNavigationBottom.getMenu().getItem(1).setChecked(true);
+        handleViewChange(itemId, false, true);
     }
 
     @Override
@@ -98,19 +107,39 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
 
     @Override
     public void onBackPressed() {
-        handleViewChange(R.id.navigation_learning, true);
+        handleViewChange(R.id.navigation_learning, true, false);
     }
 
     @Override
     public void onResume() {
-        // check notifications
-        mNotificationHandler.update(mNavigationBottom);
+        for (int i = 0; i < alarms.size(); ++i) {
+            alarms.get(i).cancelAlarm(getBaseContext());
+        }
+        alarms.clear();
+
         super.onResume();
     }
 
-    private void handleViewChange(int newItem, boolean back_navigation) {
+    @Override
+    public void onPause() {
+        Alarm alarm = new Alarm();
+        Date time = Calendar.getInstance().getTime();
+        time.setTime(System.currentTimeMillis() + 5000);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(time);
+        Intent clickIntent = new Intent(this, MainActivity.class);
+        clickIntent.putExtra(MainActivity.STARTSCREENITEMID,  R.id.navigation_repeat);
+        NotificationInfo notificationInfo = NotificationHandler.getInstance().makeNotification(getBaseContext(), clickIntent);
+        if (notificationInfo.id != -1) {
+            alarm.setAlarm(getBaseContext(), notificationInfo);
+            alarms.add(alarm);
+        }
+        super.onPause();
+    }
+
+    private void handleViewChange(int newItem, boolean backNavigation, boolean firstScreen) {
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        if (f.getTag().equals(tagItemFragment)) {
+        if (!firstScreen && f.getTag().equals(tagItemFragment)) {
             ItemFragment itemFragment = (ItemFragment) f;
             itemFragment.updateFragment(newItem);
             switch (newItem) {
@@ -124,7 +153,7 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
                     setToolbar(getString(R.string.title_learned), false);
                     break;
             }
-            if (back_navigation) {
+            if (backNavigation) {
                 mNavigationBottom.setSelectedItemId(newItem);
             }
         } else {
@@ -133,38 +162,62 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
             bundl.putInt("Item", newItem);
             itemFragment.setArguments(bundl);
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.fragment_container, itemFragment, tagItemFragment).addToBackStack(null).commit();
-            mNavigationBottom.getMenu().setGroupCheckable(0, true, true);
-            int checkable_item = 0;
-            switch (newItem) {
-                case R.id.navigation_repeat:
-                    checkable_item = 0;
-                    break;
-                case R.id.navigation_learning:
-                    checkable_item = 1;
-                    break;
-                case R.id.navigation_learned:
-                    checkable_item = 2;
-                    break;
+            if (firstScreen) {
+                fragmentTransaction.add(R.id.fragment_container, itemFragment, tagItemFragment).addToBackStack(null).commit();
+            } else {
+                fragmentTransaction.replace(R.id.fragment_container, itemFragment, tagItemFragment).addToBackStack(null).commit();
+                mNavigationBottom.getMenu().setGroupCheckable(0, true, true);
             }
-            mNavigationBottom.getMenu().getItem(checkable_item).setChecked(true);
+            int itemNr = itemIdToItemNr(newItem);
+            mNavigationBottom.getMenu().getItem(itemNr).setChecked(true);
             setToolbar(getString(newItem), false);
         }
     }
 
-    private Runnable periodicUpdate = new Runnable () {
-        public void run() {
-            // scheduled another events to be in 10 seconds later
-            mHandler.postDelayed(periodicUpdate, 3600*1000);
-            // check if we need to send notification
+    int itemIdToItemNr(int itemId) {
+        int itemNr = 0;
+        switch (itemId) {
+            case R.id.navigation_repeat:
+                itemNr = 0;
+                break;
+            case R.id.navigation_learning:
+                itemNr = 1;
+                break;
+            case R.id.navigation_learned:
+                itemNr = 2;
+                break;
         }
-    };
-
-    public void startHandlerThread(){
-        mHandlerThread = new HandlerThread("HandlerThread");
-        mHandlerThread.start();
-        mHandler = new Handler(mHandlerThread.getLooper());
+        return itemNr;
     }
+
+    int itemNrtoItemId(int itemNr) {
+        int itemId = R.id.navigation_learning;
+        switch (itemNr) {
+            case 0:
+                itemId = R.id.navigation_repeat;
+                break;
+            case 1:
+                itemId = R.id.navigation_learning;
+                break;
+            case 2:
+                itemId = R.id.navigation_learned;
+                break;
+        }
+        return itemId;
+    }
+
+//    private Runnable periodicUpdate = new Runnable () {
+//        public void run() {
+//            // scheduled another events to be in 10 seconds later
+//            mHandler.postDelayed(periodicUpdate, 3600*1000);
+//            // check if we need to send notification
+//        }
+//    };
+//    public void startHandlerThread(){
+//        mHandlerThread = new HandlerThread("HandlerThread");
+//        mHandlerThread.start();
+//        mHandler = new Handler(mHandlerThread.getLooper());
+//    }
 
     public void setToolbar(String title, boolean back_navigation) {
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(back_navigation);
@@ -176,7 +229,7 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
     @Override
     public void onAddMemory(String mnemonic, String content) {
         // add to database go to main screen
-        handleViewChange(R.id.navigation_learning, false);
+        handleViewChange(R.id.navigation_learning, false, false);
 
         Memory memory = new Memory(mnemonic, content);
         MyDBHandler.getInstance().addMemory(memory);
@@ -227,6 +280,4 @@ public class MainActivity  extends AppCompatActivity implements ItemFragment.OnL
         content.setText(memory.content);
     }
 
-
-
-    }
+}
