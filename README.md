@@ -5,3 +5,4 @@ This android application will remind you to repeat the new things you have learn
 The application is currently only tested on smartphones.
 
 Stopped the development of this app by discovering the AnkiDroid Application, which suits my needs. Keeping this app as a toy app.
+
